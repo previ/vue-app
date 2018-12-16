@@ -56,10 +56,7 @@ jobs:
             VERSION=${CIRCLE_TAG}
             echo ${VERSION}
             echo ${GITHUB_TOKEN}
-            echo ${CIRCLE_PROJECT_USERNAME}
-            echo ${CIRCLE_PROJECT_REPONAME}
-            echo ${CIRCLE_SHA1}
-            ls 
+            ls dist 
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete version ./dist
 workflows:
   version: 2
