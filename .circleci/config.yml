@@ -39,9 +39,9 @@ jobs:
           command: |
             npm run build
       - persist_to_workspace:
-          root: .
+          root: ~/repo
           paths:
-            - "./artifacts"
+            - "./dist"
 
 
   publish:
@@ -49,7 +49,7 @@ jobs:
       - image: cibuilds/github:0.10
     steps:
       - attach_workspace:
-          at: ./artifacts
+          at: ./dist
       - run:
           name: "Publish Release on GitHub"
           command: |
@@ -59,8 +59,8 @@ jobs:
             echo ${CIRCLE_PROJECT_USERNAME}
             echo ${CIRCLE_PROJECT_REPONAME}
             echo ${CIRCLE_SHA1}
-            ls ./artifacts/dist/
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete version ./artifacts/dist/
+            ls 
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete version ./dist
         
 workflows:
   version: 2
