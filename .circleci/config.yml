@@ -39,7 +39,7 @@ jobs:
           command: |
             npm run build
 
-  publish-github-release:
+  publish:
     docker:
       - image: cibuilds/github:0.10
     steps:
