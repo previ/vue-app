@@ -50,9 +50,6 @@ jobs:
           command: |
             VERSION=${CIRCLE_TAG}
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/dist/
-    filters:
-      tags:
-        only: /^v.*/
         
 workflows:
   version: 2
@@ -60,3 +57,8 @@ workflows:
     jobs:
       - build
       - publish
+        requires:
+          - build
+        filters:
+          tags:
+            only: /^v.*/
