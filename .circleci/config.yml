@@ -38,34 +38,29 @@ jobs:
           name: "build dist files"
           command: |
             npm run build
-      - persist_to_workspace:
-          root: ~/repo
-          paths:
-            - dist/*
       - run:
           root: ~/repo
           command: |
-            VERSION=${CIRCLE_TAG}
-            echo ${VERSION}
-            echo ${GITHUB_TOKEN}
-            ls dist 
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete version ./dist
-
+            tar czf vue-app-dist.tgz dist
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - *.tgz
 
   publish:
     docker:
       - image: cibuilds/github:0.10
     steps:
       - attach_workspace:
-          at: ./dist
+          at: ./
       - run:
           name: "Publish Release on GitHub"
           command: |
             VERSION=${CIRCLE_TAG}
             echo ${VERSION}
             echo ${GITHUB_TOKEN}
-            ls dist 
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete version ./dist
+            ls 
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete version *.tgz
 workflows:
   version: 2
   build_and_publish:
@@ -74,7 +69,4 @@ workflows:
       - publish:
           requires:
             - build
-          filters:
-            tags:
-              only: /^v.*/
 
