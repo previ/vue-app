@@ -57,6 +57,7 @@ jobs:
       - run:
           name: "Publish Release on GitHub"
           command: |
+            CIRCLE_TAG="$(git tag -l --points-at HEAD)"
             echo ${CIRCLE_TAG}
             ls 
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} *.tgz
@@ -69,7 +70,5 @@ workflows:
           requires:
             - build
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /^v.*/
