@@ -37,6 +37,8 @@ jobs:
       - run: 
           name: "build dist files"
           command: |
+            CIRCLE_TAG="$(git tag -l --points-at HEAD)"
+            echo ${CIRCLE_TAG} > circle_tag.txt
             npm run build
       - run:
           root: ~/repo
@@ -47,6 +49,7 @@ jobs:
           paths:
             - dist
             - ./*.tgz
+            - circle_tag.txt
 
   publish:
     docker:
@@ -57,9 +60,8 @@ jobs:
       - run:
           name: "Publish Release on GitHub"
           command: |
-            CIRCLE_TAG="$(git tag -l --points-at HEAD)"
-            echo ${CIRCLE_TAG}
-            ls 
+            CIRCLE_TAG=$(cat circle_tag.txt)
+            echo $CIRCLE_TAG
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} *.tgz
 workflows:
   version: 2
