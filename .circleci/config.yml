@@ -45,7 +45,8 @@ jobs:
       - persist_to_workspace:
           root: ~/repo
           paths:
-            - *.tgz
+            - dist
+            - ./*.tgz
 
   publish:
     docker:
