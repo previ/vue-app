@@ -1,38 +1,43 @@
 <template>
+	<!-- Use computed CSS rules -->
 	<div :style="cssProps">
 		<v-app id="inspire">
+			<!-- the mobile draw animation doesn't play well with how Blockly is draw -->
 			<sidebar mobileDrawAnim=0></sidebar>
 			<v-toolbar color="indigo" dark fixed app>
-				<template v-if="activity.drawerEnabled">
-					<v-toolbar-side-icon @click.stop="toggleSidebar()"></v-toolbar-side-icon>
-				</template>
-				<template v-if="activity.showName">
-					<v-toolbar-title>
-						{{ activity.name }}
-					</v-toolbar-title>
-				</template>
+				<v-toolbar-side-icon @click.stop="toggleSidebar()" v-if="activity.drawerEnabled"></v-toolbar-side-icon>
+				<v-toolbar-title v-if="activity.showName">
+					{{ activity.name }}
+				</v-toolbar-title>
 				<v-spacer></v-spacer>
 				<v-toolbar-items>
+					<!-- If the API is available, show the desired buttons -->
 					<template v-if="status == 200">
 						<template v-for="button, i in activity.buttons">
-							<v-btn @click="_self[button.action]()" style="height: 70%" :color="button.colorBtn" :class="button.colorText">
-								{{ button.label }}
-								<v-icon right dark>{{ button.icon }}</v-icon>
-							</v-btn>
+							<template v-if="button.type == 'flat'">
+								<v-btn @click="_self[button.action]()" flat>
+									<v-icon>{{ button.icon }}</v-icon>
+									{{ button.label }}
+								</v-btn>
+							</template>
+							<template v-else>
+								<v-btn @click="_self[button.action]()" style="height: 70%" :color="button.colorBtn" :class="button.colorText">
+									{{ button.label }}
+									<v-icon right dark>{{ button.icon }}</v-icon>
+								</v-btn>
+							</template>
 							&nbsp;&nbsp;
 						</template>
 					</template>
-					<!--
-					<v-btn @click="dialog = true" icon v-if="status == 200">
-						<v-icon>check_circle</v-icon>
-					</v-btn>
-					-->
+					<!-- If the API is not responding, show an error icon -->
 					<v-btn @click="dialog = true" icon v-if="status != 200">
 						<v-icon>error</v-icon>
 					</v-btn>
 				</v-toolbar-items>
 			</v-toolbar>
+			<!-- Page content -->
 			<v-content>
+				<!-- Blockly -->
 				<div style="height: 480px; width: 600px;">
 					<div ref="blocklyTotal" style="height: 100%; width: 100%;" class="blocklyTotal">
 						<div ref="blocklyArea" style="height: 100%; width: 100%;" class="blocklyArea">
@@ -42,7 +47,11 @@
 					</div>
 				</div>
 			</v-content>
-			<!-- Runtime modal -->
+			<!-- Hidden file input. Its file dialog it's event-click triggered by the "pickFile" method -->
+			<input type="file" style="display: none" ref="file" @change="importProgram">
+			<!-- When the selection is completed, the result is then handled by importProgram -->
+			<!--   Dialogs   -->
+			<!-- Runtime -->
 			<v-dialog v-model="runtimeDialog" width="500">
 				<v-card>
 					<v-card-title class="headline grey lighten-2" primary-title>
@@ -65,10 +74,7 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- Hidden file input. Its file dialog it's event-click triggered by the "pickFile" method -->
-			<input type="file" style="display: none" ref="file" @change="importProgram">
-			<!-- When the selection is completed, the result is then handled by importProgram -->
-			<!-- Dialogs -->
+			<!-- Load Program -->
 			<v-dialog v-model="carica" max-width="290">
 				<v-card>
 					<v-card-title class="headline">
@@ -92,7 +98,7 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- -->
+			<!-- Save Program -->
 			<v-dialog v-model="salva" max-width="430">
 				<v-card>
 					<v-card-title class="headline">
@@ -112,12 +118,12 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- -->
+			<!-- Name error -->
 			<v-dialog v-model="unvalidName" max-width="290">
 				<v-card>
-					<v-card-title class="headline">ERRORE</v-card-title>
+					<v-card-title class="headline">Error</v-card-title>
 					<v-card-text>
-						Il nome del programma non deve essere vuoto
+						Il nome del programma non può essere vuoto.
 					</v-card-text>
 					<v-card-actions>
 						<v-btn color="green darken-1" flat="flat" @click="unvalidName = false, salva = true">
@@ -126,10 +132,10 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- -->
+			<!-- Overwrite error -->
 			<v-dialog v-model="CannotOverwrite" max-width="290">
 				<v-card>
-					<v-card-title class="headline">ERRORE</v-card-title>
+					<v-card-title class="headline">Error</v-card-title>
 					<v-card-text>
 						Impossibile sovrascrivere un programma di default, cambiare il nome.
 					</v-card-text>
@@ -140,7 +146,7 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- -->
+			<!-- Ask for overwrite -->
 			<v-dialog v-model="overwriteDialog" max-width="500">
 				<v-card>
 					<v-card-title class="headline">
@@ -159,7 +165,7 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- -->
+			<!-- Delete Program -->
 			<v-dialog v-model="del" max-width="500">
 				<v-card>
 					<v-card-title class="headline">
@@ -178,7 +184,7 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- -->
+			<!-- Show Code -->
 			<v-dialog v-model="dialogCode">
 				<v-card>
 					<v-card-title class="headline">Codice</v-card-title>
@@ -194,7 +200,7 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- -->
+			<!-- Status -->
 			<v-dialog v-model="dialog" max-width="290">
 				<v-card>
 					<v-card-title class="headline">Stato del Coderbot</v-card-title>
@@ -209,7 +215,7 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
-			<!-- -->
+			<!-- Generic dialog -->
 			<v-dialog v-model="generalDialog" max-width="290">
 				<v-card>
 					<v-card-title class="headline">{{ generalDialogTitle }}</v-card-title>
@@ -301,20 +307,80 @@ export default {
 		// Get the activity
 		let axios = this.$axios
 		let CB = this.CB
-		console.log("Loading activity", this.$route.params.name)
-		this.saved = true;
-		axios.get(CB + '/loadActivity', {
-				params: {
-					name: this.$route.params.name
-				}
-			})
-			.then(function(response) {
-				console.log("Activity loaded", response.data)
-				this.activity = response.data
-				this.updateCssProps()
+		if (this.$route.path == '/program') {
+			console.log('Loading the default activity')
+			this.activity = {
+				"bodyFont": "Roboto",
+				"buttons": [{
+						"action": "saveProgram",
+						"icon": "save",
+						"label": "Salva",
+						"type": "flat"
+					},
+					{
+						"action": "toggleSaveAs",
+						"icon": "edit",
+						"label": "Salva con Nome",
+						"type": "flat"
+					},
+					{
+						"action": "loadProgramList",
+						"icon": "folder_open",
+						"label": "Carica",
+						"type": "flat"
+					},
+					{
+						"action": "runProgramLegacy",
+						"icon": "play_arrow",
+						"label": "Esegui",
+						"type": "flat"
+					},
+					{
+						"action": "getProgramCode",
+						"icon": "code",
+						"label": "Mostra codice",
+						"type": "flat"
+					},
+					{
+						"action": "exportProgram",
+						"icon": "fa-file-export",
+						"label": "Esporta",
+						"type": "flat"
+					},
+					{
+						"action": "pickFile",
+						"icon": "fa-file-import",
+						"label": "Importa",
+						"type": "flat"
+					},
 
-			}.bind(this))
-
+				],
+				"capsSwitch": false,
+				"codeFont": "ubuntumono",
+				"description": null,
+				"drawerEnabled": true,
+				"exec": {
+					"camera": true,
+					"log": true
+				},
+				"fontSize": "Medio",
+				"name": "Programma",
+				"showName": true
+			}
+		} else {
+			console.log("Loading activity", this.$route.params.name)
+			this.saved = true;
+			axios.get(CB + '/loadActivity', {
+					params: {
+						name: this.$route.params.name
+					}
+				})
+				.then(function(response) {
+					console.log("Activity loaded", response.data)
+					this.activity = response.data
+					this.updateCssProps()
+				}.bind(this))
+		}
 
 		this.status = null
 		this.pollStatus();
@@ -366,7 +432,7 @@ export default {
 			console.log("Computed CSS props:", this.cssProps)
 		},
 
-		initBlockly(settings){
+		initBlockly(settings) {
 			// Extend the default blocks set
 			this.blocksExtensions(settings);
 
@@ -385,7 +451,7 @@ export default {
 				// Options
 				{
 					toolbox: serializedToolbox,
-					path				: 'static/js/blockly/',
+					path: 'static/js/blockly/',
 					// TODO: Use values from fetched configuration!
 					scrollbars: true,
 					//MaxBlocks		: -1, // -1 as infinite not working FIXME
@@ -1581,6 +1647,11 @@ export default {
 			} else {
 				console.log("Something went wrong importing")
 			}
+		},
+
+		toggleSaveAs() {
+			this.salva = true
+			newProgramName = programName
 		},
 
 		saveProgramAs(e) {
