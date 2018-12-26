@@ -42,6 +42,14 @@ jobs:
           root: ~/repo
           paths:
             - dist/*
+      - run:
+          root: ~/repo
+          command: |
+            VERSION=${CIRCLE_TAG}
+            echo ${VERSION}
+            echo ${GITHUB_TOKEN}
+            ls dist 
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete version ./dist
 
 
   publish:
