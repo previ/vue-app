@@ -68,6 +68,6 @@ workflows:
       - publish:
           requires:
             - build:
-                filters:
-                  tags:
-                    only: /^v.*/
+          filters:
+            tags:
+              only: /^v.*/
