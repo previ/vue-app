@@ -67,7 +67,7 @@ workflows:
       - build
       - publish:
           requires:
-            - build:
+            - build
           filters:
             tags:
               only: /^v.*/
