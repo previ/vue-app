@@ -67,13 +67,13 @@ workflows:
   version: 2
   build_only:
     jobs:
-      - build
+      - build:
           filters:
             branches:
               only: master
   build_and_publish:
     jobs:
-      - build
+      - build:
           filters:
             tags:
               only: /^v.*/
